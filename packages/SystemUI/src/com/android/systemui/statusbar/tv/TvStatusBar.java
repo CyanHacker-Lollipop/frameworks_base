@@ -102,6 +102,10 @@ public class TvStatusBar extends BaseStatusBar {
     @Override // CommandQueue
     public void notificationLightPulse(int argb, int onMillis, int offMillis) {
     }
+	
+    @Override // CommandQueue
+    public void hideHeadsUpCandidate(String packageName) {
+    }
 
     @Override
     protected WindowManager.LayoutParams getSearchLayoutParams(
@@ -150,7 +154,7 @@ public class TvStatusBar extends BaseStatusBar {
     public void scheduleHeadsUpEscalation() {
     }
 
-    @Override
+    @Override // CommandQueue
     public void scheduleHeadsUpClose() {
     }
 
