@@ -77,7 +77,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // database gets upgraded properly. At a minimum, please confirm that 'upgradeVersion'
     // is properly propagated through your change.  Not doing so will result in a loss of user
     // settings.
-    private static final int DATABASE_VERSION = 121;
+
+    private static final int DATABASE_VERSION = 123;
 
     private Context mContext;
     private int mUserHandle;
@@ -1932,6 +1933,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             upgradeVersion = 121;
         }
 
+<<<<<<< HEAD
+=======
+        if (upgradeVersion < 122) {
+            db.beginTransaction();
+            SQLiteStatement stmt = null;
+            try {
+                stmt = db.compileStatement("INSERT OR IGNORE INTO secure(name,value)"
+                        + " VALUES(?,?);");
+                loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
+                        R.bool.def_advanced_mode);
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+                if (stmt != null) stmt.close();
+            }
+            upgradeVersion = 122;
+        }
+
+        if (upgradeVersion < 123) {
+            // only the owner has access to global table, so we need to check that here
+            if (mUserHandle == UserHandle.USER_OWNER) {
+                String[] globalToSecure = new String[] { Settings.Secure.POWER_MENU_ACTIONS };
+
+                moveSettingsToNewTable(db, TABLE_GLOBAL, TABLE_SECURE, globalToSecure, true);
+            }
+
+            String[] systemToSecure = new String[] {
+                    Secure.DEV_FORCE_SHOW_NAVBAR,
+                    Secure.KEYBOARD_BRIGHTNESS,
+                    Secure.BUTTON_BRIGHTNESS,
+                    Secure.BUTTON_BACKLIGHT_TIMEOUT
+            };
+            moveSettingsToNewTable(db, TABLE_SYSTEM, TABLE_SECURE, systemToSecure, true);
+
+            upgradeVersion = 123;
+        }
+
+>>>>>>> 99406c4... Enable Buttons and Status Bar settings Multi-user enabled
         // *** Remember to update DATABASE_VERSION above!
 
         if (upgradeVersion != currentVersion) {
