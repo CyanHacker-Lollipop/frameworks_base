@@ -1933,24 +1933,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             upgradeVersion = 121;
         }
 
-<<<<<<< HEAD
-=======
-        if (upgradeVersion < 122) {
-            db.beginTransaction();
-            SQLiteStatement stmt = null;
-            try {
-                stmt = db.compileStatement("INSERT OR IGNORE INTO secure(name,value)"
-                        + " VALUES(?,?);");
-                loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
-                        R.bool.def_advanced_mode);
-                db.setTransactionSuccessful();
-            } finally {
-                db.endTransaction();
-                if (stmt != null) stmt.close();
-            }
-            upgradeVersion = 122;
-        }
-
         if (upgradeVersion < 123) {
             // only the owner has access to global table, so we need to check that here
             if (mUserHandle == UserHandle.USER_OWNER) {
@@ -1970,7 +1952,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             upgradeVersion = 123;
         }
 
->>>>>>> 99406c4... Enable Buttons and Status Bar settings Multi-user enabled
         // *** Remember to update DATABASE_VERSION above!
 
         if (upgradeVersion != currentVersion) {
