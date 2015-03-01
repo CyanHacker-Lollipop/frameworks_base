@@ -354,6 +354,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private int mStatusBarHeaderHeight;
 
     private boolean mShowCarrierInPanel = false;
+    private boolean mShowLabel;
+    private int mShowLabelTimeout;
+
+    // Status bar carrier
+    private boolean mShowStatusBarCarrier;
 
     // position
     int[] mPositionTmp = new int[2];
@@ -451,6 +456,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.HEADS_UP_SNOOZE_TIME),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_GREETING_TIMEOUT),
                     false, this, UserHandle.USER_ALL);
             update();
         }
@@ -604,6 +612,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             Intent intent = new Intent("com.cyanogenmod.action.UserChanged");
             intent.setPackage("com.android.settings");
             mContext.sendBroadcastAsUser(intent, new UserHandle(UserHandle.USER_CURRENT));
+            mShowLabelTimeout = Settings.System.getIntForUser(resolver,
+                    Settings.System.STATUS_BAR_GREETING_TIMEOUT, 400, mCurrentUserId);
         }
     }
 
@@ -2474,6 +2484,28 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 animateStatusBarHide(mNotificationIconArea, animate);
             } else {
                 animateStatusBarShow(mNotificationIconArea, animate);
+                if (mGreeting != null && !TextUtils.isEmpty(mGreeting) && mShowLabel) {
+                    if (animate) {
+                        mTemasekLabel.setVisibility(View.VISIBLE);
+                        mTemasekLabel.animate().cancel();
+                        mTemasekLabel.animate()
+                                .alpha(1f)
+                                .setDuration(mShowLabelTimeout)
+                                .setInterpolator(ALPHA_IN)
+                                .setStartDelay(50)
+                                .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                labelAnimatorFadeOut(animate);
+                            }
+                        });
+                    } else {
+                        labelAnimatorFadeOut(animate);
+                    }
+                    mShowLabel = false;
+                } else {
+                    animateStatusBarShow(mNotificationIconArea, animate);
+                }
             }
         }
 
@@ -3948,6 +3980,22 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         if (shouldUpdateStatusbar(mCurrentTheme, newTheme)) {
             mCurrentTheme = (ThemeConfig) newTheme.clone();
             recreateStatusBar();
+
+            // detect status bar carrier state when theme change.
+            mShowStatusBarCarrier = Settings.System.getInt(
+                    resolver, Settings.System.STATUS_BAR_CARRIER, 0) == 1;
+            showStatusBarCarrierLabel(mShowStatusBarCarrier);
+
+            mGreeting = Settings.System.getStringForUser(resolver,
+                    Settings.System.STATUS_BAR_GREETING,
+                    UserHandle.USER_CURRENT);
+            if (mGreeting != null && !TextUtils.isEmpty(mGreeting)) {
+                mTemasekLabel.setText(mGreeting);
+            }
+            mShowLabelTimeout = Settings.System.getIntForUser(resolver,
+                    Settings.System.STATUS_BAR_GREETING_TIMEOUT, 400,
+                    UserHandle.USER_CURRENT);
+
         } else {
             loadDimens();
         }
