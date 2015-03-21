@@ -36,14 +36,9 @@ public class RotationLockTile extends QSTile<QSTile.BooleanState> {
 
     private final RotationLockController mController;
 
-    private final boolean mAdvancedMode;
-
     public RotationLockTile(Host host) {
         super(host);
         mController = host.getRotationLockController();
-
-        mAdvancedMode = Settings.Secure.getInt(mContext.getContentResolver(),
-                Settings.Secure.ADVANCED_MODE, 1) == 1;
     }
 
     @Override
@@ -68,12 +63,8 @@ public class RotationLockTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     protected void handleLongClick() {
-        if (!mAdvancedMode) {
-            mHost.startSettingsActivity(DISPLAY_SETTINGS);
-        } else {
             mHost.startSettingsActivity(DISPLAY_ROTATION_SETTINGS);
         }
-    }
 
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
